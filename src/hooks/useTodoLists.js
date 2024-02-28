@@ -42,21 +42,17 @@ export function useTodoLists() {
         }
       );
     },
-    async deleteList(id) {
-      // Perform the DELETE request here
-      const response = await fetch(`${APIs.TodoLists}/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.ok) {
-        // If the request is successful, update the local data cache
-        await mutate(oldData => oldData.filter(d => d.id !== id), false);
-      } else {
-        // Handle errors
-        console.error('Failed to delete todo list:', response.statusText);
-      }
+    async deleteList(listToDelete) {
+      await mutate(
+        await putter({
+          url: APIs.TodoListDeleteList, // this endpoint must be implemented to handle list deletion
+          id: listToDelete
+        }),
+        {
+          populateCache: false,
+          optimisticData: oldData => oldData.filter(list => list.id !== listToDelete)
+        }
+      );
     },
   };
 }

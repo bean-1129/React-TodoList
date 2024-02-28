@@ -12,6 +12,7 @@ export const APIs = {
   TodoList: 'todo-list',
   TodoListDelete: 'todo-list-delete',
   TodoListUpdate: 'todo-list-update',
+  TodoListDeleteList: 'todo-list-delete-list'
 };
 
 export async function fetcher({ url, ...variables }) {
@@ -41,6 +42,12 @@ export async function putter({ url, id, ...variables }) {
       return db.listItems.delete(id);
     case APIs.TodoListUpdate:
       return db.listItems.update(id, variables);
+    case APIs.TodoListDeleteList:
+      await db.transaction('rw', db.lists, db.listItems, async () => {
+        await db.listItems.where({ listId: id }).delete();
+        await db.lists.delete(id);
+      });
+      break;
     default:
       throw new Error(`Unknown API ${url}`);
   }
